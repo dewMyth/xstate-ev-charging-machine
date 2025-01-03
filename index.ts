@@ -6,6 +6,7 @@ const evChargingMachine = createMachine({
   initial: "Idle",
   context: {
     message: "",
+    type: "",
   },
   states: {
     Idle: {
@@ -14,8 +15,18 @@ const evChargingMachine = createMachine({
       }),
       // To test the state transition
       on: {
-        START_CHARGING: "Charging",
-        ATTEMPT_AUTHORIZATION: "Authorized",
+        START_CHARGING: {
+          target: "Charging",
+          actions: assign({
+            type: "START_CHARGING",
+          }),
+        },
+        ATTEMPT_AUTHORIZATION: {
+          target: "Authorized",
+          actions: assign({
+            type: "ATTEMPT_AUTHORIZATION",
+          }),
+        },
       },
     },
     Authorized: {
@@ -23,8 +34,18 @@ const evChargingMachine = createMachine({
         message: "Vehicle Authorized! Please plug in your Vehicle to Charge!",
       }),
       on: {
-        AUTHORIZATION_SUCCESS: "Starting",
-        AUTHORIZATION_FAILED: "AuthorizationFailed",
+        AUTHORIZATION_SUCCESS: {
+          target: "Starting",
+          actions: assign({
+            type: "AUTHORIZATION_SUCCESS",
+          }),
+        },
+        AUTHORIZATION_FAILED: {
+          target: "AuthorizationFailed",
+          actions: assign({
+            type: "AUTHORIZATION_FAILED",
+          }),
+        },
       },
     },
     AuthorizationFailed: {
@@ -38,7 +59,12 @@ const evChargingMachine = createMachine({
         message: "Preparing the Charging Process",
       }),
       on: {
-        CHARGING_STARTED: "Charging",
+        CHARGING_STARTED: {
+          target: "Charging",
+          actions: assign({
+            type: "CHARGING_STARTED",
+          }),
+        },
       },
     },
     Charging: {
@@ -64,9 +90,23 @@ const evChargingMachine = createMachine({
 // Create an Actor for the EV Charging Machine
 const evChargingActor = createActor(evChargingMachine);
 
+// Variable to Store the history of the State
+let prevState: any = null;
+
 // Subscribe to the Actor
 evChargingActor.subscribe((state) => {
+  // Log the current state
+  console.log("====================================");
+  console.log(`Entered ${state.value} state. `);
+
+  if (prevState) {
+    console.log(
+      `Transitioned from ${prevState} to ${state.value} on ${state.context.type}.`
+    );
+  }
+  prevState = state.value;
   console.log(state.context.message);
+  console.log("====================================");
 });
 
 // Start the Actor
