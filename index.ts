@@ -43,7 +43,7 @@ const evChargingMachineApp = (state?) => {
         context: {
           message: "",
           type: "",
-          authorized: true,
+          authorized: randomAuthorizer(),
         },
         states: {
           Idle: {
@@ -102,9 +102,24 @@ const evChargingMachineApp = (state?) => {
               message:
                 "Vehicle Authorization Failed! Please try again or Contact Support team!",
             }),
-            // after: {
-            //   2000: "Idle",
-            // },
+            on: {
+              ATTEMPT_AUTHORIZATION: [
+                {
+                  guard: (value) => value.context.authorized,
+                  target: "Authorized",
+                  actions: assign({
+                    type: "ATTEMPT_AUTHORIZATION",
+                  }),
+                },
+                {
+                  guard: (value) => !value.context.authorized,
+                  target: "AuthorizationFailed",
+                  actions: assign({
+                    type: "ATTEMPT_AUTHORIZATION",
+                  }),
+                },
+              ],
+            },
           },
           Starting: {
             entry: assign({
@@ -179,7 +194,6 @@ const evChargingMachineApp = (state?) => {
             break;
 
           case "f":
-            console.log("Simulate Authorizer Failed");
             evChargingActor.send({ type: "AUTHORIZATION_FAILED" });
             break;
 
