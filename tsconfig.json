@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    // ...
+    "strictNullChecks": true,
+    // or set `strict` to true, which includes `strictNullChecks`
+    // "strict": true,
+    "skipLibCheck": true
+  }
+}
