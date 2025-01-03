@@ -1,5 +1,13 @@
 import { createMachine, assign, createActor } from "xstate";
 
+import { randomAuthorizer } from "./helper";
+
+// const randomBooleanGenerator = () => {
+//   const randomNumberBetween0to10 = Math.floor(Math.random() * 10);
+//   console.log(randomNumberBetween0to10);
+//   return randomNumberBetween0to10 > 5 ? true : false;
+// };
+
 // Define the State Machine for the EV Charging Machine
 const evChargingMachine = createMachine({
   id: "evCharging",
@@ -7,6 +15,7 @@ const evChargingMachine = createMachine({
   context: {
     message: "",
     type: "",
+    authorized: randomAuthorizer(),
   },
   states: {
     Idle: {
@@ -21,12 +30,22 @@ const evChargingMachine = createMachine({
             type: "START_CHARGING",
           }),
         },
-        ATTEMPT_AUTHORIZATION: {
-          target: "Authorized",
-          actions: assign({
-            type: "ATTEMPT_AUTHORIZATION",
-          }),
-        },
+        ATTEMPT_AUTHORIZATION: [
+          {
+            guard: (value) => value.context.authorized,
+            target: "Authorized",
+            actions: assign({
+              type: "ATTEMPT_AUTHORIZATION",
+            }),
+          },
+          {
+            guard: (value) => !value.context.authorized,
+            target: "AuthorizationFailed",
+            actions: assign({
+              type: "ATTEMPT_AUTHORIZATION",
+            }),
+          },
+        ],
       },
     },
     Authorized: {
@@ -53,6 +72,9 @@ const evChargingMachine = createMachine({
         message:
           "Vehicle Authorization Failed! Please try again or Contact Support team!",
       }),
+      after: {
+        2000: "Idle",
+      },
     },
     Starting: {
       entry: assign({
@@ -97,7 +119,7 @@ let prevState: any = null;
 evChargingActor.subscribe((state) => {
   // Log the current state
   console.log("====================================");
-  console.log(`Entered ${state.value} state. `);
+  console.log(`Entered ${state.value} state.`);
 
   if (prevState) {
     console.log(
