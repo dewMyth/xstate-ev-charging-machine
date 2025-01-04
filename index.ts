@@ -38,6 +38,7 @@ const evChargingMachineApp = (state?) => {
     \n`,
     (answer) => {
       const evChargingMachine = createMachine({
+        /** @xstate-layout N4IgpgJg5mDOIC5RgG4GEAWBDATlAlgHZQB0AkhADZgDEAygCoCCASgwPpoASrA4mQDleAbQAMAXUSgADgHtY+AC75ZhKSAAeiAEzbRJAJwA2ABwB2ACyXRFk6NEBmADQgAnogsBWCyU-HtBiYAjEHGQWaeAL6RLqiYuATE5FS0TAwMAKIAsgAKHEwAqgxcAPIsZABaaWQlAmKSSCByCsqq6loIuvrG5lYWNnaOLu4IDtpGJHoOonYOBqKeRmY20bHo2HhEpBTUNGmZuflFpeVVDDV1QQ0y8koqao0dXYamlta29s5uiKFmJHaBTwOEyLCKiIImVbgdYJLbJXaFYplSrVWrsABiTDIABkMgARerqZp3NqPHR6F69d6DL4jILg-6giwOMEWAzeMxQuIbRKkJgAV0UGFkOHwAC9IDRuHxBLx2IxWJkCRIibdWg9QB0grY-kFFmNREY9PNtCZhogHCESCEDJZpkYjGz7EYuTDNkkBUKReKsOr0Vh8NQIHt0tk8uxEScUedaoTGsT1e1ELa-toIWYDEEHEZ7Hqzd8EBDtCQzONPNogSzmbaLK74u6+YLhaKxb77v7A5L9mGjkjTqjLtcmmr7kmEH4DCRRAYWUYZyZtP18yNgiQ2QZAlZxsCQkE6zy4XRFLhlMQaAAhDL8AScHgsa8iFXxkekzU-ExGTwlz-LbQZufBOaCDVr4QQBDmGaeN4Ni1jE0L1ryJAIVs9AMCUOS3jKQhxjcLSjmSnS6EEU56ssW62IEQEgZ4YHGKIkHQRYsFwYQsgQHA6jcrCxCqnhr6aIgAC0RhAcJ+7cdsKS8SSGoCcB2hUaaJBLKaDj9OE4Tli6cFcQ2JCes24qQNJiYEVmSnpp4ZhjEERj0hWQGWvoJgWEaH7atZH7eOJekGd6rZ+gGQYmfhb4IKYk4GAEZihJ45hgcyQFFmuQLTrYYxGA4cUOD5iFHieWwhfxWrLBM-7skCUUQvRVFzJMcyeI45iOtmH65XCyE8c+fGyU8hrFjYc5WQa07Lh4dXaA1oILI4RrtUkR6yNI0jGd1MljouVqvIsVnMq1Fi1ZOk3sk1ZgtaY2nREAA */
         id: "evCharging",
         initial: initialState,
         context: {
@@ -95,6 +96,12 @@ const evChargingMachineApp = (state?) => {
                   type: "CHARGING_STARTED",
                 }),
               },
+              RESET: {
+                target: "Idle",
+                actions: assign({
+                  type: "RESET",
+                }),
+              },
             },
           },
           AuthorizationFailed: {
@@ -119,6 +126,15 @@ const evChargingMachineApp = (state?) => {
                   }),
                 },
               ],
+              RESET: {
+                target: "Idle",
+                actions: assign({
+                  type: "RESET",
+                }),
+              },
+            },
+            after: {
+              2000: "Idle",
             },
           },
           Starting: {
@@ -130,6 +146,12 @@ const evChargingMachineApp = (state?) => {
                 target: "Charging",
                 actions: assign({
                   type: "BEGIN_CHARGING",
+                }),
+              },
+              RESET: {
+                target: "Idle",
+                actions: assign({
+                  type: "RESET",
                 }),
               },
             },
@@ -145,15 +167,29 @@ const evChargingMachineApp = (state?) => {
                   type: "STOP_CHARGING",
                 }),
               },
+              RESET: {
+                target: "Idle",
+                actions: assign({
+                  type: "RESET",
+                }),
+              },
             },
           },
           Stopped: {
             entry: assign({
               message: "Charging Stopped!",
             }),
-            // after: {
-            //   2000: "Idle",
-            // },
+            on: {
+              RESET: {
+                target: "Idle",
+                actions: assign({
+                  type: "RESET",
+                }),
+              },
+            },
+            after: {
+              2000: "Idle",
+            },
           },
         },
       });
