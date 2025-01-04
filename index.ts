@@ -1,7 +1,10 @@
 import { createMachine, assign, createActor } from "xstate";
 const readline = require("node:readline"); // To Enable a user interactive terminal - https://nodejs.org/api/readline.html
 
+// Random Authorizer Function - 50% chance of Authorization Success
 import { randomAuthorizer } from "./helper";
+
+import { STATES, TRANSITIONS } from "./constants";
 
 // Create a readline interface
 const rl = readline.createInterface({
@@ -9,25 +12,19 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-// Sample Interactive Terminal
-// const runRecursively = () => {
-//   rl.question("What do you think of Node.js? ", (answer) => {
-//     if (answer === "exit") {
-//       rl.close();
-//       return;
-//     } else {
-//       runRecursively();
-//     }
-//   });
-// };
-
-// console.log(runRecursively());
-
+/**
+ * Passing the state as an optional argument to persist the state on next recursive call
+ * Otherwise, the state will be reset to "Idle" on every recursive call if the initial state is hardcoded
+ * on createMachine function.
+ */
 const evChargingMachineApp = (state?) => {
-  let initialState = state || "Idle";
+  // Initial State keeeping to persist
+  let initialState: STATES = state || STATES.Idle;
 
   rl.question(
-    `Press following buttons to test the EV Charging Machine:
+    `
+    ================ EV Charging Machine ================
+    Press following buttons to test the EV Charging Machine:
     \n 1. Press "a" to Attempt Authorization
     \n 2. Press "f" to Simulate failed Authorization
     \n 3. Press "s" to Begin preparations for the Charging process
@@ -35,6 +32,7 @@ const evChargingMachineApp = (state?) => {
     \n 5. Press "t" to Stop the Charging Process
     \n 6. Press "r" to Reset the EV Charging Machine
     \n 7. Press "q" to Exit the EV Charging Machine
+    \n    ================ EV Charging Machine ================
     \n`,
     (answer) => {
       const evChargingMachine = createMachine({
@@ -42,69 +40,63 @@ const evChargingMachineApp = (state?) => {
         id: "evCharging",
         initial: initialState,
         context: {
-          message: "",
-          type: "",
+          message: "", // Log Message to be displayed in the terminal as log
+          type: "", // To get the Transition type to display in the terminal as log
           authorized: randomAuthorizer(),
         },
         states: {
-          Idle: {
+          [STATES.Idle]: {
             entry: assign({
               message: "Please plug in your Vehicle to Charge!",
             }),
             // To test the state transition
             on: {
-              START_CHARGING: {
-                target: "Starting",
-                actions: assign({
-                  type: "START_CHARGING",
-                }),
-              },
               ATTEMPT_AUTHORIZATION: [
                 {
                   guard: (value) => value.context.authorized,
-                  target: "Authorized",
+                  target: [STATES.Authorized],
                   actions: assign({
-                    type: "ATTEMPT_AUTHORIZATION",
+                    type: TRANSITIONS.ATTEMPT_AUTHORIZATION,
                   }),
                 },
                 {
                   guard: (value) => !value.context.authorized,
-                  target: "AuthorizationFailed",
+                  target: [STATES.AuthorizationFailed],
                   actions: assign({
-                    type: "ATTEMPT_AUTHORIZATION",
+                    type: TRANSITIONS.ATTEMPT_AUTHORIZATION,
                   }),
                 },
               ],
               // Simulate Authorization Failed
               AUTHORIZATION_FAILED: {
-                target: "AuthorizationFailed",
+                target: [STATES.AuthorizationFailed],
                 actions: assign({
-                  type: "AUTHORIZATION_FAILED",
+                  type: TRANSITIONS.AUTHORIZATION_FAILED,
                 }),
               },
             },
           },
-          Authorized: {
+          [STATES.Authorized]: {
             entry: assign({
               message:
                 "Vehicle Authorized! Please plug in your Vehicle to Charge!",
             }),
             on: {
               CHARGING_STARTED: {
-                target: "Starting",
+                target: [STATES.Starting],
                 actions: assign({
-                  type: "CHARGING_STARTED",
+                  type: TRANSITIONS.CHARGING_STARTED,
                 }),
               },
               RESET: {
-                target: "Idle",
+                target: [STATES.Idle],
                 actions: assign({
-                  type: "RESET",
+                  type: TRANSITIONS.RESET,
                 }),
               },
             },
           },
-          AuthorizationFailed: {
+          [STATES.AuthorizationFailed]: {
             entry: assign({
               message:
                 "Vehicle Authorization Failed! Please try again or Contact Support team!",
@@ -113,82 +105,76 @@ const evChargingMachineApp = (state?) => {
               ATTEMPT_AUTHORIZATION: [
                 {
                   guard: (value) => value.context.authorized,
-                  target: "Authorized",
+                  target: [STATES.Authorized],
                   actions: assign({
-                    type: "ATTEMPT_AUTHORIZATION",
+                    type: TRANSITIONS.ATTEMPT_AUTHORIZATION,
                   }),
                 },
                 {
                   guard: (value) => !value.context.authorized,
-                  target: "AuthorizationFailed",
+                  target: [STATES.AuthorizationFailed],
                   actions: assign({
-                    type: "ATTEMPT_AUTHORIZATION",
+                    type: TRANSITIONS.ATTEMPT_AUTHORIZATION,
                   }),
                 },
               ],
               RESET: {
-                target: "Idle",
+                target: [STATES.Idle],
                 actions: assign({
-                  type: "RESET",
+                  type: TRANSITIONS.RESET,
                 }),
               },
             },
-            after: {
-              2000: "Idle",
-            },
           },
-          Starting: {
+          [STATES.Starting]: {
             entry: assign({
               message: "Preparing the Charging Process",
             }),
             on: {
               BEGIN_CHARGING: {
-                target: "Charging",
+                target: [STATES.Charging],
                 actions: assign({
-                  type: "BEGIN_CHARGING",
+                  type: TRANSITIONS.BEGIN_CHARGING,
                 }),
               },
               RESET: {
-                target: "Idle",
+                target: [STATES.Idle],
                 actions: assign({
-                  type: "RESET",
+                  type: TRANSITIONS.RESET,
                 }),
               },
             },
           },
-          Charging: {
+          [STATES.Charging]: {
             entry: assign({
               message: "Charging in Progress!",
             }),
             on: {
               STOP_CHARGING: {
-                target: "Stopped",
+                target: [STATES.Stopped],
                 actions: assign({
-                  type: "STOP_CHARGING",
+                  type: TRANSITIONS.STOP_CHARGING,
                 }),
               },
               RESET: {
-                target: "Idle",
+                target: [STATES.Idle],
                 actions: assign({
-                  type: "RESET",
+                  type: TRANSITIONS.RESET,
                 }),
               },
             },
           },
-          Stopped: {
+          [STATES.Stopped]: {
             entry: assign({
               message: "Charging Stopped!",
             }),
             on: {
               RESET: {
-                target: "Idle",
+                target: [STATES.Idle],
                 actions: assign({
-                  type: "RESET",
+                  type: TRANSITIONS.RESET,
                 }),
               },
-            },
-            after: {
-              2000: "Idle",
             },
           },
         },
@@ -202,17 +188,25 @@ const evChargingMachineApp = (state?) => {
 
       // Subscribe to the Actor
       evChargingActor.subscribe((state) => {
-        // Log the current state
-        console.log("====================================");
-        console.log(`Entered ${state.value} state.`);
-
-        if (prevState) {
+        if (prevState && prevState !== state.value) {
+          // Log the current state
+          console.log("====================================");
+          console.log(`Entered ${state.value} state.`);
           console.log(
             `Transitioned from ${prevState} to ${state.value} on ${state.context.type}.`
           );
         }
         prevState = state.value;
         console.log(state.context.message);
+        if (
+          prevState === STATES.Stopped ||
+          prevState === STATES.AuthorizationFailed
+        ) {
+          console.log(
+            `Resetting the state to ${STATES.Idle} EV Charging Machine...`
+          );
+          evChargingActor.send({ type: TRANSITIONS.RESET });
+        }
         console.log("====================================");
       });
 
@@ -226,27 +220,27 @@ const evChargingMachineApp = (state?) => {
       } else {
         switch (answer) {
           case "a":
-            evChargingActor.send({ type: "ATTEMPT_AUTHORIZATION" });
+            evChargingActor.send({ type: TRANSITIONS.ATTEMPT_AUTHORIZATION });
             break;
 
           case "f":
-            evChargingActor.send({ type: "AUTHORIZATION_FAILED" });
+            evChargingActor.send({ type: TRANSITIONS.ATTEMPT_AUTHORIZATION });
             break;
 
           case "s":
-            evChargingActor.send({ type: "CHARGING_STARTED" });
+            evChargingActor.send({ type: TRANSITIONS.CHARGING_STARTED });
             break;
 
           case "c":
-            evChargingActor.send({ type: "BEGIN_CHARGING" });
+            evChargingActor.send({ type: TRANSITIONS.BEGIN_CHARGING });
             break;
 
           case "t":
-            evChargingActor.send({ type: "STOP_CHARGING" });
+            evChargingActor.send({ type: TRANSITIONS.STOP_CHARGING });
             break;
 
           case "r":
-            evChargingActor.send({ type: "RESET" });
+            evChargingActor.send({ type: TRANSITIONS.RESET });
             break;
 
           default:
@@ -254,6 +248,7 @@ const evChargingMachineApp = (state?) => {
             break;
         }
 
+        // Passing the current state to persist the state in the next round
         evChargingMachineApp(prevState);
       }
     }
