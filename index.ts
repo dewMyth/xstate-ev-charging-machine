@@ -228,15 +228,29 @@ const evChargingMachineApp = (state?) => {
             break;
 
           case "s":
-            evChargingActor.send({ type: TRANSITIONS.CHARGING_STARTED });
+            if (state !== STATES.Authorized) {
+              console.log("Please Authorized to Start Charging Process...");
+            } else {
+              evChargingActor.send({ type: TRANSITIONS.CHARGING_STARTED });
+            }
             break;
 
           case "c":
-            evChargingActor.send({ type: TRANSITIONS.BEGIN_CHARGING });
+            if (state !== STATES.Authorized) {
+              console.log("Please Authorized to Start Charging Process...");
+            } else {
+              evChargingActor.send({ type: TRANSITIONS.BEGIN_CHARGING });
+            }
+
             break;
 
           case "t":
-            evChargingActor.send({ type: TRANSITIONS.STOP_CHARGING });
+            if (state !== STATES.Authorized) {
+              console.log("Please Authorized to Start Charging Process...");
+            } else {
+              evChargingActor.send({ type: TRANSITIONS.STOP_CHARGING });
+            }
+
             break;
 
           case "r":
