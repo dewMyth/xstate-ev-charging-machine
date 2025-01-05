@@ -6,12 +6,15 @@ import { randomAuthorizer } from "./helper";
 
 import { STATES, TRANSITIONS } from "./constants";
 
+/** Save the Random Authroized state in a higher level constant variable
+ * to keep Authorization State in a persist manner.
+ */
 const getRandomAuthStateToPersist = randomAuthorizer();
 
 if (!getRandomAuthStateToPersist) {
   console.log("*****************************************");
   console.log(
-    "NOTE: Please re-start the EV Application if you want to get the Random Authorized State to TRUE"
+    "NOTE: Please Restart the Application to Change the Random Authorization Status"
   );
   console.log("*****************************************");
 }
@@ -197,6 +200,7 @@ const evChargingMachineApp = (state?) => {
 
       // Subscribe to the Actor
       evChargingActor.subscribe((state) => {
+        // Show only if a TRANSITION is actually happened, i.e history state and the current state of the recusion should not be equal
         if (prevState && prevState !== state.value) {
           // Log the current state
           console.log("###############################################");
@@ -209,6 +213,9 @@ const evChargingMachineApp = (state?) => {
         }
         prevState = state.value;
 
+        /**  Automatically Reset the state to Idle if the state change to `Stopped` (So user can start new process) or
+         *   `AuthorizationFailed`(So user can attaempt another authrization)
+         */
         if (
           prevState === STATES.Stopped ||
           prevState === STATES.AuthorizationFailed
@@ -239,7 +246,9 @@ const evChargingMachineApp = (state?) => {
 
           case "s":
             if (state !== STATES.Authorized) {
+              console.log("###############################################");
               console.log("Please Authorized to Start Charging Process...");
+              console.log("###############################################");
             } else {
               evChargingActor.send({ type: TRANSITIONS.CHARGING_STARTED });
             }
@@ -248,7 +257,13 @@ const evChargingMachineApp = (state?) => {
           case "c":
             if (state !== STATES.Starting) {
               console.log(
+                "##################################################################"
+              );
+              console.log(
                 `You have to Authorized and be in the ${STATES.Starting} to start ${STATES.Charging}`
+              );
+              console.log(
+                "##################################################################"
               );
             } else {
               evChargingActor.send({ type: TRANSITIONS.BEGIN_CHARGING });
@@ -259,7 +274,13 @@ const evChargingMachineApp = (state?) => {
           case "t":
             if (state !== STATES.Charging) {
               console.log(
+                "##################################################################"
+              );
+              console.log(
                 "You have to Start Charging process first to Stop Charging!"
+              );
+              console.log(
+                "##################################################################"
               );
             } else {
               evChargingActor.send({ type: TRANSITIONS.STOP_CHARGING });
@@ -283,4 +304,5 @@ const evChargingMachineApp = (state?) => {
   );
 };
 
+// Start the Application
 evChargingMachineApp();
