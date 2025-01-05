@@ -26,7 +26,6 @@ const rl = readline.createInterface({
  * Otherwise, the state will be reset to "Idle" on every recursive call if the initial state is hardcoded
  * on createMachine function.
  */
-
 const evChargingMachineApp = (state?) => {
   // Initial State keeeping to persist
   let initialState: STATES = state || STATES.Idle;
@@ -46,7 +45,7 @@ const evChargingMachineApp = (state?) => {
     \n`,
     (answer) => {
       const evChargingMachine = createMachine({
-        /** @xstate-layout N4IgpgJg5mDOIC5RgG4GEAWBDATlAlgHZQB0AkhADZgDEAygCoCCASgwPpoASrA4mQDleAbQAMAXUSgADgHtY+AC75ZhKSAAeiAEzbRJAJwA2ABwB2ACyXRFk6NEBmADQgAnogsBWCyU-HtBiYAjEHGQWaeAL6RLqiYuATE5FS0TAwMAKIAsgAKHEwAqgxcAPIsZABaaWQlAmKSSCByCsqq6loIuvrG5lYWNnaOLu4IDtpGJHoOonYOBqKeRmY20bHo2HhEpBTUNGmZuflFpeVVDDV1QQ0y8koqao0dXYamlta29s5uiKFmJHaBTwOEyLCKiIImVbgdYJLbJXaFYplSrVWrsABiTDIABkMgARerqZp3NqPHR6F69d6DL4jILg-6giwOMEWAzeMxQuIbRKkJgAV0UGFkOHwAC9IDRuHxBLx2IxWJkCRIibdWg9QB0grY-kFFmNREY9PNtCZhogHCESCEDJZpkYjGz7EYuTDNkkBUKReKsOr0Vh8NQIHt0tk8uxEScUedaoTGsT1e1ELa-toIWYDEEHEZ7Hqzd8EBDtCQzONPNogSzmbaLK74u6+YLhaKxb77v7A5L9mGjkjTqjLtcmmr7kmEH4DCRRAYWUYZyZtP18yNgiQ2QZAlZxsCQkE6zy4XRFLhlMQaAAhDL8AScHgsa8iFXxkekzU-ExGTwlz-LbQZufBOaCDVr4QQBDmGaeN4Ni1jE0L1ryJAIVs9AMCUOS3jKQhxjcLSjmSnS6EEU56ssW62IEQEgZ4YHGKIkHQRYsFwYQsgQHA6jcrCxCqnhr6aIgAC0RhAcJ+7cdsKS8SSGoCcB2hUaaJBLKaDj9OE4Tli6cFcQ2JCes24qQNJiYEVmSnpp4ZhjEERj0hWQGWvoJgWEaH7atZH7eOJekGd6rZ+gGQYmfhb4IKYk4GAEZihJ45hgcyQFFmuQLTrYYxGA4cUOD5iFHieWwhfxWrLBM-7skCUUQvRVFzJMcyeI45iOtmH65XCyE8c+fGyU8hrFjYc5WQa07Lh4dXaA1oILI4RrtUkR6yNI0jGd1MljouVqvIsVnMq1Fi1ZOk3sk1ZgtaY2nREAA */
+        /** @xstate-layout N4IgpgJg5mDOIC5RgG4GEAWBDATlAlgHZQB0AkhADZgDEAggCoMCiAsgAoMD6dAqgwAkA8gCUyALUZkhAOQDaABgC6iUAAcA9rHwAXfBsKqQAD0QBWABwkFAdgsBGACwWAnAscBmGy8cAmADQgAJ6IAGw29iQ2oWY2CmaWdr5mLgC+qYGomLgExORUtIwsHNx8gqISUrJy9ipIIJraegZGpgh+gSEIsWYkDr6OLi5eoZ6O6Zno2HhEpBTU9PzCYpIM0jJcAGJ0ZAAyzAAiinXqWrr6hvVt9vYKJKEKwy72DxYRZo72nYiO3n0pHlCowszl8MQm4CmOVmJDoAFcdBgNDh8AAvSA0NACOgiADiZBkuK4AGUGDiWEdlEZGucWldEPZfB4on4Bg5HkDfh5vggbhY7qEBi4zPYIh5HGYPBCstNcqR4YjkWiMSJmMTmAxjtSzs1LqBrjYbFEYqMXAMPIDQi4bDzbiD7hEHBYLL57CCzKFpVCZnkFUiUaisLrNlh8NQIPQmGxODwlhVVustfUabrWuYrLYXb5swMXh4XY4eb4bMzHApBSXfLYzRKvdkffKEf60UGLiGwxiitHSnGVlV5LVtU0Lmn2r5rApJ5aUq5s6FbYaSBKPE4FCvQiu4hY67KYX6lYHg6HwzRVerNVTkzqR-TeYvoh7BubLdaeQ4SGZJ5ObH5fhyzDu0J5MSOi4HoxA0AAQsw+IbFiOKwbiSanMOdL6gyHi9H4bpWi6bqOKatrOMya6MiKVair8gENiQIFgbMp5qhqyENNeaEmAy94mk+ngvjawQYW81h2HyK4KPYHg+NRcokPWco0KSQjsFw8F4gSSGXihtJ6hxvL5iQc6xPYkogq4sQLhYWFeGWZafr8vjSTCckMWezGaaxqE6QaRoPqaz5Aq+Am8qErhLiCxY3JYFijOMGSQs5wE6BoahqCqTEXicHnaaOoo+dxNYWgF-FdG8Vium8yQfIMniehChAaBAcBGDKQFQEO2W3gAtPOQXdY5eTzGA7WprexmRLEDgpL40UehJhZBYa46Og+xkuMC25xS1NH7gGkDDTe6G8iKH4ie4vhrTY2bDLa03jSJsQ1iCzj9Y2ioBq2BjtuG+3sdcHjjhYmHCmMrqjGCPLWSQQNlg8QySvYwovbRoE4OBbVXp5OXHRNuWhC8n4-mYtqWMyLggmJhqYVaaSbd6MkJejWkjYdY0neyfgXVd3JBW60VQ24BGAjmPg05MDPI8lqUQD9XkMtjp0c+EXM8taLgkKKbqWDVCT2Ok6RAA */
         id: "evCharging",
         initial: initialState,
         context: {
@@ -55,7 +54,7 @@ const evChargingMachineApp = (state?) => {
           authorized: getRandomAuthStateToPersist,
         },
         states: {
-          [STATES.Idle]: {
+          Idle: {
             entry: assign({
               message: "Please plug in your Vehicle to Charge!",
             }),
@@ -86,7 +85,7 @@ const evChargingMachineApp = (state?) => {
               },
             },
           },
-          [STATES.Authorized]: {
+          Authorized: {
             entry: assign({
               message:
                 "Vehicle Authorized! Please plug in your Vehicle to Charge!",
@@ -106,7 +105,7 @@ const evChargingMachineApp = (state?) => {
               },
             },
           },
-          [STATES.AuthorizationFailed]: {
+          AuthorizationFailed: {
             entry: assign({
               message:
                 "Vehicle Authorization Failed! Please try again or Contact Support team!",
@@ -136,7 +135,7 @@ const evChargingMachineApp = (state?) => {
               },
             },
           },
-          [STATES.Starting]: {
+          Starting: {
             entry: assign({
               message: "Preparing the Charging Process",
             }),
@@ -155,7 +154,7 @@ const evChargingMachineApp = (state?) => {
               },
             },
           },
-          [STATES.Charging]: {
+          Charging: {
             entry: assign({
               message: "Charging in Progress!",
             }),
@@ -174,7 +173,7 @@ const evChargingMachineApp = (state?) => {
               },
             },
           },
-          [STATES.Stopped]: {
+          Stopped: {
             entry: assign({
               message: "Charging Stopped!",
             }),
