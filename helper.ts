@@ -1,6 +1,6 @@
 export const randomAuthorizer = () => {
-  const randomNumberBetween0to10 = Math.floor(Math.random() * 10);
-  const authorizationStatus = randomNumberBetween0to10 > 5 ? true : false;
-  console.log("Authorization Status: ", authorizationStatus);
+  const random0to1Value = Math.random();
+  const authorizationStatus = random0to1Value > 0.5 ? true : false;
+  console.log("Random Authorization Status : ", authorizationStatus);
   return authorizationStatus;
 };

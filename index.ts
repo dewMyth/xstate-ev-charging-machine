@@ -6,6 +6,15 @@ import { randomAuthorizer } from "./helper";
 
 import { STATES, TRANSITIONS } from "./constants";
 
+const getRandomAuthStateToPersist = randomAuthorizer();
+
+if (!getRandomAuthStateToPersist) {
+  console.log("*****************************************");
+  console.log(
+    "NOTE: Please re-start the EV Application if you want to get the Random Authorized State to TRUE"
+  );
+  console.log("*****************************************");
+}
 // Create a readline interface
 const rl = readline.createInterface({
   input: process.stdin,
@@ -17,13 +26,14 @@ const rl = readline.createInterface({
  * Otherwise, the state will be reset to "Idle" on every recursive call if the initial state is hardcoded
  * on createMachine function.
  */
+
 const evChargingMachineApp = (state?) => {
   // Initial State keeeping to persist
   let initialState: STATES = state || STATES.Idle;
 
   rl.question(
     `
-    ================ EV Charging Machine ================
+    ================ EV Charging Machine is in ${initialState.toUpperCase()} mode ================
     Press following buttons to test the EV Charging Machine:
     \n 1. Press "a" to Attempt Authorization
     \n 2. Press "f" to Simulate failed Authorization
@@ -42,7 +52,7 @@ const evChargingMachineApp = (state?) => {
         context: {
           message: "", // Log Message to be displayed in the terminal as log
           type: "", // To get the Transition type to display in the terminal as log
-          authorized: randomAuthorizer(),
+          authorized: getRandomAuthStateToPersist,
         },
         states: {
           [STATES.Idle]: {
@@ -190,14 +200,16 @@ const evChargingMachineApp = (state?) => {
       evChargingActor.subscribe((state) => {
         if (prevState && prevState !== state.value) {
           // Log the current state
-          console.log("====================================");
-          console.log(`Entered ${state.value} state.`);
+          console.log("###############################################");
+          console.log(`STATE : Entered ${state.value} state.`);
           console.log(
-            `Transitioned from ${prevState} to ${state.value} on ${state.context.type}.`
+            `TRANSITION : Transitioned from ${prevState} to ${state.value} on ${state.context.type}.`
           );
+          console.log(`Message : ${state.context.message}`);
+          console.log("###############################################");
         }
         prevState = state.value;
-        console.log(state.context.message);
+
         if (
           prevState === STATES.Stopped ||
           prevState === STATES.AuthorizationFailed
@@ -207,7 +219,6 @@ const evChargingMachineApp = (state?) => {
           );
           evChargingActor.send({ type: TRANSITIONS.RESET });
         }
-        console.log("====================================");
       });
 
       // Start the Actor
@@ -236,8 +247,10 @@ const evChargingMachineApp = (state?) => {
             break;
 
           case "c":
-            if (state !== STATES.Authorized) {
-              console.log("Please Authorized to Start Charging Process...");
+            if (state !== STATES.Starting) {
+              console.log(
+                `You have to Authorized and be in the ${STATES.Starting} to start ${STATES.Charging}`
+              );
             } else {
               evChargingActor.send({ type: TRANSITIONS.BEGIN_CHARGING });
             }
@@ -245,8 +258,10 @@ const evChargingMachineApp = (state?) => {
             break;
 
           case "t":
-            if (state !== STATES.Authorized) {
-              console.log("Please Authorized to Start Charging Process...");
+            if (state !== STATES.Charging) {
+              console.log(
+                "You have to Start Charging process first to Stop Charging!"
+              );
             } else {
               evChargingActor.send({ type: TRANSITIONS.STOP_CHARGING });
             }
